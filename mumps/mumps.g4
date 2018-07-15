@@ -33,21 +33,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 grammar mumps;
 
 program
-   : line + eof
-   ;
-
-eof
-   : SPACE* CR?
+   : line +
    ;
 
 line
    : code
    | routinedecl
-   | CR
    ;
 
 code
-   : (label | (SPACE + DOT +) | SPACE +) (command + | if_ | subproc)? SPACE* CR
+   : (label | DOT +)? (command + | if_ | subproc)
    ;
 
 /*
@@ -58,11 +53,11 @@ code
 * some number of blanks, possibly zero, before the first command.
 */
 label
-   : identifier SPACE +
+   : identifier
    ;
 
 routinedecl
-   : PERCENT? identifier (LPAREN paramlist? RPAREN)? SPACE* CR
+   : PERCENT? identifier (LPAREN paramlist? RPAREN)?
    ;
 
 paramlist
@@ -74,7 +69,7 @@ param
    ;
 
 subproc
-   : identifier (LPAREN paramlist? RPAREN)? (SPACE* command) +
+   : identifier (LPAREN paramlist? RPAREN)? (command) +
    ;
 
 command
@@ -100,7 +95,17 @@ postcondition
    ;
 
 expression
-   : term (SPACE* (ADD | MULTIPLY | SUBTRACT | DIVIDE | INTDIVIDE | MODULO | EXPONENT) expression)*
+   : term (binaryoperator expression)*
+   ;
+
+binaryoperator
+   : ADD
+   | MULTIPLY
+   | SUBTRACT
+   | DIVIDE
+   | INTDIVIDE
+   | MODULO
+   | EXPONENT
    ;
 
 term
@@ -112,7 +117,15 @@ term
 
 condition
    : term
-   | (term (NGT | NLT | LT | GT | EQUALS) term)
+   | (term relationaloperator term)
+   ;
+
+relationaloperator
+   : NGT
+   | NLT
+   | LT
+   | GT
+   | EQUALS
    ;
 
 identifier
@@ -124,8 +137,8 @@ variable
    ;
 
 function
-    : DOLLAR identifier (LPAREN arglist RPAREN)?
-    ;
+   : DOLLAR identifier (LPAREN arglist RPAREN)?
+   ;
 
 /*
 * COMMANDS
@@ -141,11 +154,11 @@ break_
    ;
 
 do_
-   : DO postcondition? SPACE + identifier (LPAREN paramlist? RPAREN)?
+   : DO postcondition? identifier (LPAREN paramlist? RPAREN)?
    ;
 
 for_
-   : FOR SPACE + term EQUALS term COLON (term COLON)? term SPACE + (command SPACE?)* COLON SPACE* condition
+   : FOR term EQUALS term COLON (term COLON)? term command* COLON condition
    ;
 
 halt_
@@ -153,55 +166,55 @@ halt_
    ;
 
 hang_
-   : HANG postcondition? SPACE + term
+   : HANG postcondition? term
    ;
 
 if_
-   : IF SPACE + condition SPACE* command
+   : IF condition command
    ;
 
 kill_
-   : KILL postcondition? SPACE + arglist
+   : KILL postcondition? arglist
    ;
 
 merge_
-   : MERGE postcondition? SPACE + term EQUALS term (',' term EQUALS term)*
+   : MERGE postcondition? term EQUALS term (',' term EQUALS term)*
    ;
 
 new_
-   : NEW postcondition? SPACE + arglist
+   : NEW postcondition? arglist
    ;
 
 quit_
-   : QUIT postcondition? (SPACE + term)?
+   : QUIT postcondition? (term)?
    ;
 
 read_
-   : READ postcondition? SPACE + arglist
+   : READ postcondition? arglist
    ;
 
 set_
-   : SET postcondition? SPACE + assign (',' assign)*
+   : SET postcondition? assign (',' assign)*
    ;
 
 view_
-   : VIEW postcondition? SPACE + IDENTIFIER
+   : VIEW postcondition? IDENTIFIER
    ;
 
 write_
-   : WRITE postcondition? SPACE + arglist
+   : WRITE postcondition? arglist
    ;
 
 xecute_
-   : XECUTE postcondition? SPACE + STRING_LITERAL
+   : XECUTE postcondition? STRING_LITERAL
    ;
 
 assign
-   : (LPAREN? arglist RPAREN?)? SPACE* EQUALS SPACE* arg
+   : (LPAREN? arglist RPAREN?)? EQUALS arg
    ;
 
 arglist
-   : arg (SPACE* COMMA arg)*
+   : arg (COMMA arg)*
    ;
 
 arg
@@ -484,7 +497,7 @@ IDENTIFIER
 
 
 STRING_LITERAL
-   : '"' ('""' | ~'"')* '"'
+   : '"' ('""' | ~ '"')* '"'
    ;
 
 
@@ -629,18 +642,10 @@ fragment Z
 
 
 COMMENT
-   : ';' ~[\r\n]* -> skip
-   ;
-
-SPACE
-   : ' '
-   ;
-
-CR
-   : [\r\n]+
+   : ';' ~ [\r\n]* -> skip
    ;
 
 
 WS
-   : [\t] -> skip
+   : [ \r\n\t] -> skip
    ;
