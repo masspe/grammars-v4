@@ -133,11 +133,15 @@ identifier
    ;
 
 variable
-   : (CARAT | AMPERSAND)* identifier
+   : storagetype? identifier
    ;
 
 function
-   : DOLLAR identifier (LPAREN arglist RPAREN)?
+   : storagetype? identifier LPAREN arglist? RPAREN
+   ;
+
+storagetype
+   : (CARAT | AMPERSAND | DOLLAR) +
    ;
 
 /*
@@ -642,7 +646,7 @@ fragment Z
 
 
 COMMENT
-   : ';' ~ [\r\n]+ -> skip
+   : ';' ~ [\r\n] + -> skip
    ;
 
 
