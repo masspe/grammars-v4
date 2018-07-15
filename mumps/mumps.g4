@@ -33,10 +33,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 grammar mumps;
 
 program
-   : line +
+   : block +
    ;
 
-line
+block
    : code
    | routinedecl
    ;
@@ -95,7 +95,7 @@ postcondition
    ;
 
 expression
-   : term (binaryoperator expression)*
+   : term (binaryoperator expression)?
    ;
 
 binaryoperator
