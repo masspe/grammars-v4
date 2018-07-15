@@ -642,7 +642,7 @@ fragment Z
 
 
 COMMENT
-   : ';' ~ [\r\n]* -> skip
+   : ';' ~ [\r\n]+ -> skip
    ;
 
 
